@@ -11,10 +11,8 @@ The general process resulting in a 2D grid cell simulation given some model of a
 
 ## 1. Find injected current levels and noise level to match biological median ISI
 
-- Variable **I** in the paper corresponds to **I** and **inputMags** in the scripts
-- Noise level **sigma** in the paper corresponds to **uniqueNoiseSTD** in the scripts
-- Objective: match biological median ISI of 0.2 s period (5 Hz firing rate) and a standard deviation of 0.036 s.
-- Because noise causes each run to have different mean and std. dev. of the ISIs, simulate ~5000 uncoupled cells (**allncells=5000**, **pcon=0**) and check the median cell statistics.
+Find injected current levels (variable I in the paper, I and inputMags in the scripts) and noise level (sigma in the paper,uniqueNoiseSTD in the scripts) that match the biological median ISI of
+0.2 s period (5 Hz firing rate) and a standard deviation of 0.036 s. Because noise will cause each run to have a different mean and std. dev. of the ISIs, it is useful to simulate, say, 5000 uncoupled cells (allncells=5000, pcon=0) and check the statistics of the median cell. Is, simulate ~5000 uncoupled cells (**allncells=5000**, **pcon=0**) and check the median cell statistics.
 
 This can be done with scripts:
 
@@ -63,17 +61,10 @@ After running a simulation, try (some variables may not be produced by all scrip
 
 ## 2. Find input-frequency relation (FI curve)
 
-- This should be done to fairly high resolution.
-- Guidelines to minimize simulation time:
-  - Use desired spacing of the grid cell to find beta parameter:  
-    `beta = sqrt(3) * spacing / 2`
-  - Select maximum instantaneous velocity for accurate path integration (e.g. `v_max = 1 m/s`).
-  - Frequency range needed for FI curve is then `2 * beta * v_max`.
-  - Select a low frequency bound and find the input current producing it (`I_low`).
-    - For Class 1 excitable cell this is essentially arbitrary.
-    - For Class 2 excitable cell the cell imposes minimum firing rate.
-  - Find increment `dI` moving input current about 1/200th way to desired upper frequency (`freq_high = freq_low + 2*beta*v_max`, corresponding to `I_high`).
-  - Run FI simulations for `inputMags = I_low : dI : I_high`.
+This should be done to a fairly high resolution (but low resolutions haven't been thoroughly explored, so perhaps there is a coarser resolution that still works fine), so the following guidelines may be useful in maximizing the use
+of simulation time by simulating no more than is necessary: Use the desired spacing of the grid cell to find the beta parameter (beta = sqrt(3)*spacing/2). Now select a maximum instantaneous velocity to be able to accurately path integrate (say v_max = 1 m/s). The range of frequencies the FI curve then needs is 2*beta*v_max wide. Next select
+a low frequency bound and find the input current that produces it (I_low). This is essentially arbitrary for a Class 1 excitable cell, but for a Class 2 excitable cell the cell itself will impose a minimum firing rate (by definition). Find the increment (dI) to the input current that moves it, say 1/200th (a reasonably high resolution) of
+the way to the desired upper frequency (which is freq_high = freq_low + 2*beta*v_max corresponding to I_high). Now run FI simulations for inputMags=I_low:dI:I_high.
 
 This can be done with scripts:
 
@@ -98,15 +89,12 @@ These files contain vectors "**currents**" and "**freqs**". `currents(i)` is the
 
 ## 3. Use the FI curve in a 2D grid simulation to translate velocity signals into desired frequencies
 
-- This allows the VCOs to be controlled.
-- You still need appropriate parameters for the postsynaptic cell (**G** in the paper).
-- No solved method is provided.
-- Reasonable start:
-  - Run 4 s simulations and compare traces of VCO cells to activity in the postsynaptic cell (like manuscript figure traces).
-  - Visually decide whether stronger weights or time constants (or damping constants for resonant postsynaptic cell) need adjusting.
-  - Once parameters seem successful, run longer simulations: 10 s, 40 s, 180 s making changes as needed.
-  - This process can take a while.
-- One analytical and one numerical technique are known but are not included.
+This allows the VCOs to be
+controlled, but you still need to find appropriate parameters for the postsynaptic cell (G in the paper). I have not solved this problem. A reasonable start is to run 4 s simulations and compare traces of VCO
+cells to the activity in the postsynaptic cell (like the figures of traces in the manuscript) and visually decide whether stronger weights or time constants (or damping constants for a resonant postsynaptic
+cell) need to change and by how much. Once apparently successful parameters are found, try running a 10 s simulation then a 40 s simulation then a 180 s simulation (to give approximate magnitudes),
+making changes to parameters at any stage where it becomes clear you have them wrong. This can take a while. I have one analytical and one numerical technique that are starting points for successfully handling
+this problem, but neither proved perfect in practice so are not included.
 
 This can be done with scripts:
 
@@ -152,6 +140,4 @@ None yet.
 
 * Included the trajectory from Hafting et al. 2005 which was used to make the manuscript figures.
 
----
-
-2025-06-02: Converted README to Markdown.
+### Converted README to Markdown. (2025 June 2)
